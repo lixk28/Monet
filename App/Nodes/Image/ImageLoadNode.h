@@ -70,6 +70,7 @@ protected:
 private:
     QWidget* m_widget;
 
+    QLabel* m_path;
     QLabel* m_thumb;
     QPushButton* m_button;
 

@@ -5,6 +5,9 @@
 
 #include <QtWidgets/QFileDialog>
 #include <QVBoxLayout>
+#include <qboxlayout.h>
+#include <qcolor.h>
+#include <qlabel.h>
 #include <qnamespace.h>
 #include <qpalette.h>
 
@@ -12,6 +15,10 @@ QWidget* ImageLoadNode::embeddedWidget()
 {
     if (m_widget)
         return m_widget;
+
+    m_path = new QLabel();
+    m_path->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+    m_path->setWordWrap(true);
 
     m_button = new QPushButton("Load image from local file");
     m_button->installEventFilter(this);
@@ -25,15 +32,12 @@ QWidget* ImageLoadNode::embeddedWidget()
     m_thumb->setMaximumSize(800, 800);
     m_thumb->installEventFilter(this);
 
-    QPalette palette = m_thumb->palette();
-    palette.setColor(m_thumb->backgroundRole(), Qt::white);
-    palette.setColor(m_thumb->foregroundRole(), Qt::black);
-    m_thumb->setPalette(palette);
-
     m_widget = new QWidget();
-    m_widget->setLayout(new QVBoxLayout());
-    m_widget->layout()->addWidget(m_button);
-    m_widget->layout()->addWidget(m_thumb);
+    QVBoxLayout* layout = new QVBoxLayout();
+    layout->addWidget(m_path);
+    layout->addWidget(m_button);
+    layout->addWidget(m_thumb);
+    m_widget->setLayout(layout);
 
     return m_widget;
 }
@@ -50,10 +54,12 @@ bool ImageLoadNode::eventFilter(QObject *object, QEvent *event)
             if (fileName.isEmpty())
                 return true;
 
+            m_path->setText(fileName);
+
             m_pixmap = QPixmap(fileName);
             int w = m_thumb->width();
             int h = m_thumb->height();
-            m_thumb->setPixmap(m_pixmap.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            m_thumb->setPixmap(m_pixmap.scaled(w, h, Qt::KeepAspectRatio, Qt::FastTransformation));
 
             Q_EMIT dataUpdated(0);
 
@@ -65,7 +71,7 @@ bool ImageLoadNode::eventFilter(QObject *object, QEvent *event)
             if (!m_pixmap.isNull()) {
                 int w = m_thumb->width();
                 int h = m_thumb->height();
-                m_thumb->setPixmap(m_pixmap.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                m_thumb->setPixmap(m_pixmap.scaled(w, h, Qt::KeepAspectRatio, Qt::FastTransformation));
             }
         }
     }
