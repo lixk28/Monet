@@ -4,46 +4,63 @@
 
 #include <QObject>
 #include <QLabel>
+#include <QPushButton>
 
 #include <QtNodes/NodeDelegateModel>
 #include <QtNodes/NodeDelegateModelRegistry>
 
 #include "PixmapData.h"
 
-using QtNodes::NodeData;
-using QtNodes::NodeDataType;
-using QtNodes::NodeDelegateModel;
-using QtNodes::PortIndex;
-using QtNodes::PortType;
+using namespace QtNodes;
 
-/// The model dictates the number of inputs and outputs for the Node.
-/// In this example it has no logic.
+
 class ImageLoadNode : public NodeDelegateModel
 {
     Q_OBJECT
 
 public:
-    ImageLoadNode();
-
+    ImageLoadNode() = default;
     ~ImageLoadNode() = default;
 
 public:
-    QString caption() const override { return QString("Image Load"); }
+    QString caption() const override { return QString("Load Image"); }
 
     QString name() const override { return QString("ImageLoadNode"); }
 
 public:
     virtual QString modelName() const { return QString("Source Image"); }
 
-    unsigned int nPorts(PortType const portType) const override;
+    unsigned int nPorts(PortType const portType) const override
+    {
+        if (portType == PortType::In)
+            return 0;
+        else if (portType == PortType::Out)
+            return 1;
+        return 1;
+    }
 
-    NodeDataType dataType(PortType const portType, PortIndex const portIndex) const override;
+    QString portCaption(PortType const portType, PortIndex const portIndex) const override
+    {
+        if (portType == PortType::In)
+            return QString();
+        else if (portType == PortType::Out && portIndex == 0)
+            return QString("Image");
+        return QString();
+    }
 
-    std::shared_ptr<NodeData> outData(PortIndex const port) override;
+    NodeDataType dataType(PortType const portType, PortIndex const portIndex) const override
+    {
+        return PixmapData().type();
+    }
+
+    std::shared_ptr<NodeData> outData(PortIndex const port) override
+    {
+        return std::make_shared<PixmapData>(m_pixmap);
+    }
 
     void setInData(std::shared_ptr<NodeData>, PortIndex const portIndex) override {}
 
-    QWidget *embeddedWidget() override { return m_label; }
+    QWidget *embeddedWidget() override;
 
     bool resizable() const override { return true; }
 
@@ -51,7 +68,10 @@ protected:
     bool eventFilter(QObject *object, QEvent *event) override;
 
 private:
-    QLabel *m_label;
+    QWidget* m_widget;
+
+    QLabel* m_thumb;
+    QPushButton* m_button;
 
     QPixmap m_pixmap;
 };
