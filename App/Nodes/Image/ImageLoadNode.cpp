@@ -29,14 +29,14 @@ QWidget* ImageLoadNode::embeddedWidget()
     font.setBold(true);
     m_thumb->setFont(font);
     m_thumb->setMinimumSize(200, 200);
-    m_thumb->setMaximumSize(800, 800);
+    // m_thumb->setMaximumSize(800, 800);
     m_thumb->installEventFilter(this);
 
     m_widget = new QWidget();
     QVBoxLayout* layout = new QVBoxLayout();
-    layout->addWidget(m_path);
-    layout->addWidget(m_button);
-    layout->addWidget(m_thumb);
+    layout->addWidget(m_path, 0);
+    layout->addWidget(m_button, 0);
+    layout->addWidget(m_thumb, 1);
     m_widget->setLayout(layout);
 
     return m_widget;
