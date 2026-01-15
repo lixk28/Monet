@@ -1,69 +1,46 @@
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-#include <GLFW/glfw3.h>
+#include <QtNodes/DataFlowGraphModel>
+#include <QtNodes/DataFlowGraphicsScene>
+#include <QtNodes/GraphicsView>
+#include <QtNodes/NodeData>
+#include <QtNodes/NodeDelegateModelRegistry>
 
+#include <QtGui/QScreen>
+#include <QtWidgets/QApplication>
 
-void InitImGui(GLFWwindow* window) {
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    io.FontGlobalScale = 1.5f;
-    io.Fonts->AddFontFromFileTTF("fonts/Cousine-Regular.ttf", 16.0f);
+#include "Nodes/Image/ImageLoadNode.h"
+#include "Nodes/Image/ImagePreviewNode.h"
 
-    ImGui::StyleColorsDark();
+using QtNodes::ConnectionStyle;
+using QtNodes::DataFlowGraphicsScene;
+using QtNodes::DataFlowGraphModel;
+using QtNodes::GraphicsView;
+using QtNodes::NodeDelegateModelRegistry;
 
-
-#if defined(__APPLE__)
-    ImGui_ImplOpenGL3_Init("#version 150");
-#else
-    ImGui_ImplOpenGL3_Init("#version 130");
-#endif
-
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+static std::shared_ptr<NodeDelegateModelRegistry> registerDataModels()
+{
+    auto ret = std::make_shared<NodeDelegateModelRegistry>();
+    ret->registerModel<ImageLoadNode>();
+    ret->registerModel<ImagePreviewNode>();
+    return ret;
 }
 
-int main() {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    GLFWwindow* window = glfwCreateWindow(1600, 1000, "ImGui App", nullptr, nullptr);
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
 
-    #ifdef IMGUI_IMPL_OPENGL_LOADER_GL3W
-    gl3wInit();
-    #endif
+    std::shared_ptr<NodeDelegateModelRegistry> registry = registerDataModels();
 
-    InitImGui(window);
+    DataFlowGraphModel dataFlowGraphModel(registry);
 
-    while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
+    DataFlowGraphicsScene scene(dataFlowGraphModel);
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+    GraphicsView view(&scene);
 
-        ImGui::DockSpaceOverViewport();
+    view.setWindowTitle("Data Flow: Resizable Images");
+    view.resize(800, 600);
+    // Center window.
+    view.move(QApplication::primaryScreen()->availableGeometry().center() - view.rect().center());
+    view.show();
 
-        ImGui::ShowDemoWindow();
-
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        glfwSwapBuffers(window);
-    }
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-    glfwTerminate();
-    return 0;
+    return app.exec();
 }

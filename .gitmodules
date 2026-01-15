@@ -1,3 +1,3 @@
-[submodule "Libraries/ImGui"]
-	path = Libraries/ImGui
-	url = https://github.com/ocornut/imgui
+[submodule "Libraries/QtNodes"]
+	path = Libraries/QtNodes
+	url = https://github.com/paceholder/nodeeditor.git
