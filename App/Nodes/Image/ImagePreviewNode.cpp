@@ -29,7 +29,10 @@ bool ImagePreviewNode::eventFilter(QObject *object, QEvent *event)
 
         if (event->type() == QEvent::Resize) {
             if (m_pixmap) {
-                m_label->setPixmap(m_pixmap->pixmap().scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                QPixmap pixmap = m_pixmap->pixmap();
+                if (!pixmap.isNull()) {
+                    m_label->setPixmap(pixmap.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                }
             }
         }
     }
@@ -40,12 +43,13 @@ bool ImagePreviewNode::eventFilter(QObject *object, QEvent *event)
 void ImagePreviewNode::setInData(std::shared_ptr<NodeData> nodeData, PortIndex const)
 {
     m_pixmap = std::dynamic_pointer_cast<PixmapData>(nodeData);
+    QPixmap pixmap = m_pixmap->pixmap();
 
-    if (m_pixmap) {
+    if (!pixmap.isNull()) {
         int w = m_label->width();
         int h = m_label->height();
 
-        m_label->setPixmap(m_pixmap->pixmap().scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        m_label->setPixmap(pixmap.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     } else {
         m_label->setPixmap(QPixmap());
     }
