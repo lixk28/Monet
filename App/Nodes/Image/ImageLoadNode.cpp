@@ -5,11 +5,6 @@
 
 #include <QtWidgets/QFileDialog>
 #include <QVBoxLayout>
-#include <qboxlayout.h>
-#include <qcolor.h>
-#include <qlabel.h>
-#include <qnamespace.h>
-#include <qpalette.h>
 
 QWidget* ImageLoadNode::embeddedWidget()
 {

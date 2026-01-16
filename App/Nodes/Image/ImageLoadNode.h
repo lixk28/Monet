@@ -39,12 +39,14 @@ public:
         return 1;
     }
 
-    QString portCaption(PortType const portType, PortIndex const portIndex) const override
+    bool portCaptionVisible(PortType, PortIndex) const override { return true; }
+
+    QString portCaption(PortType portType, PortIndex portIndex) const override
     {
         if (portType == PortType::In)
             return QString();
         else if (portType == PortType::Out && portIndex == 0)
-            return QString("Image");
+            return QStringLiteral("Image");
         return QString();
     }
 
