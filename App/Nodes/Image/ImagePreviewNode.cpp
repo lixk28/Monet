@@ -1,5 +1,4 @@
 #include "ImagePreviewNode.h"
-#include "PixmapData.h"
 
 #include <QtNodes/NodeDelegateModelRegistry>
 
@@ -7,39 +6,19 @@
 #include <QtCore/QEvent>
 #include <QtWidgets/QFileDialog>
 
-ImagePreviewNode::ImagePreviewNode()
-    : m_label(new QLabel("Image will appear here"))
+QWidget* ImagePreviewNode::embeddedWidget()
 {
-    m_label->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+    if (m_label)
+        return m_label;
 
+    m_label = new QLabel;
+    m_label->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
     QFont f = m_label->font();
     f.setBold(true);
-    f.setItalic(true);
-
     m_label->setFont(f);
-
     m_label->setMinimumSize(200, 200);
-
     m_label->installEventFilter(this);
-}
-
-unsigned int ImagePreviewNode::nPorts(PortType portType) const
-{
-    unsigned int result = 1;
-
-    switch (portType) {
-    case PortType::In:
-        result = 1;
-        break;
-
-    case PortType::Out:
-        result = 1;
-
-    default:
-        break;
-    }
-
-    return result;
+    return m_label;
 }
 
 bool ImagePreviewNode::eventFilter(QObject *object, QEvent *event)
@@ -49,9 +28,8 @@ bool ImagePreviewNode::eventFilter(QObject *object, QEvent *event)
         int h = m_label->height();
 
         if (event->type() == QEvent::Resize) {
-            auto d = std::dynamic_pointer_cast<PixmapData>(m_nodeData);
-            if (d) {
-                m_label->setPixmap(d->pixmap().scaled(w, h, Qt::KeepAspectRatio));
+            if (m_pixmap) {
+                m_label->setPixmap(m_pixmap->pixmap().scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
             }
         }
     }
@@ -59,27 +37,15 @@ bool ImagePreviewNode::eventFilter(QObject *object, QEvent *event)
     return false;
 }
 
-NodeDataType ImagePreviewNode::dataType(PortType const, PortIndex const) const
-{
-    return PixmapData().type();
-}
-
-std::shared_ptr<NodeData> ImagePreviewNode::outData(PortIndex)
-{
-    return m_nodeData;
-}
-
 void ImagePreviewNode::setInData(std::shared_ptr<NodeData> nodeData, PortIndex const)
 {
-    m_nodeData = nodeData;
+    m_pixmap = std::dynamic_pointer_cast<PixmapData>(nodeData);
 
-    if (m_nodeData) {
-        auto d = std::dynamic_pointer_cast<PixmapData>(m_nodeData);
-
+    if (m_pixmap) {
         int w = m_label->width();
         int h = m_label->height();
 
-        m_label->setPixmap(d->pixmap().scaled(w, h, Qt::KeepAspectRatio));
+        m_label->setPixmap(m_pixmap->pixmap().scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     } else {
         m_label->setPixmap(QPixmap());
     }

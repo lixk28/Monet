@@ -8,6 +8,8 @@
 #include <QtNodes/NodeDelegateModel>
 #include <QtNodes/NodeDelegateModelRegistry>
 
+#include "PixmapData.h"
+
 using QtNodes::NodeData;
 using QtNodes::NodeDataType;
 using QtNodes::NodeDelegateModel;
@@ -19,8 +21,7 @@ class ImagePreviewNode : public NodeDelegateModel
     Q_OBJECT
 
 public:
-    ImagePreviewNode();
-
+    ImagePreviewNode() = default;
     ~ImagePreviewNode() = default;
 
 public:
@@ -31,15 +32,33 @@ public:
 public:
     virtual QString modelName() const { return QString("Resulting Image"); }
 
-    unsigned int nPorts(PortType const portType) const override;
+    unsigned int nPorts(PortType const portType) const override
+    {
+        return portType == PortType::In ? 1 : 0;
+    }
 
-    NodeDataType dataType(PortType const portType, PortIndex const portIndex) const override;
+    bool portCaptionVisible(PortType, PortIndex) const override { return true; }
 
-    std::shared_ptr<NodeData> outData(PortIndex const port) override;
+    QString portCaption(PortType portType, PortIndex portIndex) const override
+    {
+        if (portType == PortType::In)
+            return QStringLiteral("Image");
+        return QString();
+    }
+
+    NodeDataType dataType(PortType const portType, PortIndex const portIndex) const override
+    {
+        return PixmapData().type();
+    }
+
+    std::shared_ptr<NodeData> outData(PortIndex const port) override
+    {
+        return m_pixmap;
+    }
 
     void setInData(std::shared_ptr<NodeData> nodeData, PortIndex const port) override;
 
-    QWidget *embeddedWidget() override { return m_label; }
+    QWidget *embeddedWidget() override;
 
     bool resizable() const override { return true; }
 
@@ -47,7 +66,7 @@ protected:
     bool eventFilter(QObject *object, QEvent *event) override;
 
 private:
-    QLabel *m_label;
+    QLabel* m_label;
 
-    std::shared_ptr<NodeData> m_nodeData;
+    std::shared_ptr<PixmapData> m_pixmap;
 };
