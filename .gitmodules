@@ -1,3 +1,4 @@
 [submodule "Libraries/QtNodes"]
 	path = Libraries/QtNodes
-	url = https://github.com/paceholder/nodeeditor.git
+	url = https://github.com/lixk28/nodeeditor
+	branch = monet
